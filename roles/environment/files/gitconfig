@@ -1,18 +1,18 @@
 # This is Git's per-user configuration file.
 [user]
 # Please adapt and uncomment the following lines:
-	name = Dane Kennedy
-	email = kennedy.dane@gmail.com
-[pager]
-	branch = false
-	diff = false
-[core]
-	pager = less -r
-[color]
-	ui = true
-[fetch]
-	prune = true
-[pull]
-	rebase = true
-[diff]
-	colorMoved = zebra
+	name = Overlytic
+	email = jmcloete@gmail.com
+# [pager]
+# 	branch = false
+# 	diff = false
+# [core]
+# 	pager = less -r
+# [color]
+# 	ui = true
+# [fetch]
+# 	prune = true
+# [pull]
+# 	rebase = true
+# [diff]
+# 	colorMoved = zebra

@@ -10,21 +10,13 @@ ControlPersist 15m
 
 host github.com
     HostName github.com
-    IdentityFile ~/.ssh/id_rsa
-    IdentityFile ~/.ssh/id_ed25519
+    IdentityFile ~/.ssh/id_ilifu
     User git
 
 Host *.ilifu.ac.za
     User dane
-    IdentityFile ~/.ssh/ilifu/id_rsa
+    IdentityFile ~/.ssh/ilifu/id_ilifu
     ForwardAgent yes
     ForwardX11   yes
     LocalForward 3890 ldap1.ilifu.ac.za:389
-
-Host slwrk-*
-    Hostname %h
-    User dane
-    ProxyCommand ssh dane@slurm.ilifu.ac.za nc %h 22
-    IdentityFile ~/.ssh/ilifu/id_rsa
-    ForwardX11   yes
-
+    

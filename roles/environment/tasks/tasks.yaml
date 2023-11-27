@@ -50,6 +50,7 @@
           - 'libxml2-dev'
           - 'libxmlsec1-dev'
           - 'llvm'
+          - 'bc'
           - 'make'
           - 'tk-dev'
           - 'wget'
@@ -57,33 +58,6 @@
           - 'zlib1g-dev'
         state: present
       tags: pyenv
-
-- name: Install Nerd Fonts
-  block:
-    - name: Clone Nerd Fonts Repo
-      git:
-        repo: https://github.com/ryanoasis/nerd-fonts.git
-        dest: ~/dev/nerd-fonts
-        depth: 1
-    - name: Install the patched fonts
-      shell:
-        cmd: "./install.sh {{ item }}"
-        chdir: ~/dev/nerd-fonts
-      with_items:
-        - "DejaVuSansMono"
-        - "Go-Mono"
-        - "HeavyData"
-        - "IBMPlexMono"
-        - "Inconsolata"
-        - "JetBrainsMono"
-        - "ProFont"
-        - "RobotoMono"
-        - "SourceCodePro"
-        - "Ubuntu"
-        - "UbuntuMono"
-        - "FiraCode"
-  become: no
-  tags: nerdfonts
 
 - name: Install zsh and oh-my-zsh
   block:
@@ -105,10 +79,10 @@
             creates: ~/.oh-my-zsh
         - name: Install plugins
           block:
-            - name: Install powerlevel 10k
-              git:
-                repo: https://github.com/romkatv/powerlevel10k.git
-                dest: ~/.oh-my-zsh/custom/themes/powerlevel10k
+            # - name: Install powerlevel 10k
+            #   git:
+            #     repo: https://github.com/romkatv/powerlevel10k.git
+            #     dest: ~/.oh-my-zsh/custom/themes/powerlevel10k
             - name: Install zsh autosuggestions
               git:
                 repo: https://github.com/zsh-users/zsh-autosuggestions
@@ -139,99 +113,99 @@
       become: no
       tags: ohmyzsh
 
-- name: Download and Install redis
-  vars:
-    version: "7.2.2"
-    checksum: "sha256:ca999be08800edc6d265379c4c7aafad92f0ee400692e4e2d69829ab4b4c3d08"
-  block:
-    - name: Download redis
-      get_url:
-        url: http://download.redis.io/releases/redis-{{ version }}.tar.gz
-        dest: ~{{ ansible_user_id }}/Downloads/redis-{{ version }}.tar.gz
-        checksum: "{{ checksum }}"
-    - name: Uncompress redis
-      unarchive:
-        src: ~{{ ansible_user_id }}/Downloads/redis-{{ version }}.tar.gz
-        dest: /tmp
-        creates: /tmp/redis-{{ version }}
-    - name:
-      lineinfile:
-        path: /tmp/redis-{{ version }}/src/Makefile
-        regex: "^PREFIX?=/usr/local$"
-        line: "PREFIX=/opt/redis/{{ version }}"
-    - name: Compile redis
-      make:
-        chdir: /tmp/redis-{{version}}
-        params:
-          USE_SYSTEMD: "yes"
-    - name: Install redis
-      make:
-        chdir: /tmp/redis-{{version}}
-        target: install
-      become: yes
-    - name: Add redis to PATH
-      lineinfile:
-        path: "{{ item }}"
-        state: present
-        line: "export PATH=$PATH:/opt/redis/{{ version }}/bin"
-        regexp: '^export PATH=$PATH:/opt/redis/{{ version }}/bin$'
-      loop:
-        - /etc/zsh/zprofile
-        - /etc/profile
-      become: yes
-    - name : Configure current redis
-      file:
-        src: /opt/redis/{{ version }}
-        dest: /opt/redis/current
-        state: link
-      become: yes
-    - name: Create redis group
-      group:
-        name: redis
-        system: yes
-      become: yes
-    - name: Create redis user
-      user:
-        name: redis
-        group: redis
-        create_home: no
-        system: yes
-      become: yes
-    - name: Set up redis directories
-      file:
-        path: "{{ item }}"
-        state: directory
-        mode: o=rwx,g=rx,o=rx
-        owner: redis
-        group: redis
-      loop:
-        - /etc/redis
-        - /var/redis
-        - /var/redis/6379
-      become: yes
-    - name: Configure redis
-      block:
-        - name: Copy redis config across
-          copy:
-            src: redis.conf
-            dest: /etc/redis/6379.conf
-            owner: redis
-            group: redis
-        - name: copy init script across
-          copy:
-            src: redis.service
-            dest: /etc/systemd/system/redis.service
-            owner: redis
-            group: redis
-      become: yes
-    - name: Add redis to default runlevel and start
-      service:
-        name: redis
-        state: started
-        enabled: yes
-      become: yes
-  become: no
-  tags: redis
+# - name: Download and Install redis
+#   vars:
+#     version: "7.2.2"
+#     checksum: "sha256:ca999be08800edc6d265379c4c7aafad92f0ee400692e4e2d69829ab4b4c3d08"
+#   block:
+#     - name: Download redis
+#       get_url:
+#         url: http://download.redis.io/releases/redis-{{ version }}.tar.gz
+#         dest: ~{{ ansible_user_id }}/Downloads/redis-{{ version }}.tar.gz
+#         checksum: "{{ checksum }}"
+#     - name: Uncompress redis
+#       unarchive:
+#         src: ~{{ ansible_user_id }}/Downloads/redis-{{ version }}.tar.gz
+#         dest: /tmp
+#         creates: /tmp/redis-{{ version }}
+#     - name:
+#       lineinfile:
+#         path: /tmp/redis-{{ version }}/src/Makefile
+#         regex: "^PREFIX?=/usr/local$"
+#         line: "PREFIX=/opt/redis/{{ version }}"
+#     - name: Compile redis
+#       make:
+#         chdir: /tmp/redis-{{version}}
+#         params:
+#           USE_SYSTEMD: "yes"
+#     - name: Install redis
+#       make:
+#         chdir: /tmp/redis-{{version}}
+#         target: install
+#       become: yes
+#     - name: Add redis to PATH
+#       lineinfile:
+#         path: "{{ item }}"
+#         state: present
+#         line: "export PATH=$PATH:/opt/redis/{{ version }}/bin"
+#         regexp: '^export PATH=$PATH:/opt/redis/{{ version }}/bin$'
+#       loop:
+#         - /etc/zsh/zprofile
+#         - /etc/profile
+#       become: yes
+#     - name : Configure current redis
+#       file:
+#         src: /opt/redis/{{ version }}
+#         dest: /opt/redis/current
+#         state: link
+#       become: yes
+#     - name: Create redis group
+#       group:
+#         name: redis
+#         system: yes
+#       become: yes
+#     - name: Create redis user
+#       user:
+#         name: redis
+#         group: redis
+#         create_home: no
+#         system: yes
+#       become: yes
+#     - name: Set up redis directories
+#       file:
+#         path: "{{ item }}"
+#         state: directory
+#         mode: o=rwx,g=rx,o=rx
+#         owner: redis
+#         group: redis
+#       loop:
+#         - /etc/redis
+#         - /var/redis
+#         - /var/redis/6379
+#       become: yes
+#     - name: Configure redis
+#       block:
+#         - name: Copy redis config across
+#           copy:
+#             src: redis.conf
+#             dest: /etc/redis/6379.conf
+#             owner: redis
+#             group: redis
+#         - name: copy init script across
+#           copy:
+#             src: redis.service
+#             dest: /etc/systemd/system/redis.service
+#             owner: redis
+#             group: redis
+#       become: yes
+#     - name: Add redis to default runlevel and start
+#       service:
+#         name: redis
+#         state: started
+#         enabled: yes
+#       become: yes
+#   become: no
+#   tags: redis
 
 
 - name: Install miscelleous configuration files
@@ -242,15 +216,22 @@
       copy:
         src: gitconfig
         dest: ~/.gitconfig
-    - name: Ensure kitty config dir exists
-      tags: kitty
-      become: no
-      file:
-        path: ~/.config/kitty
-        state: directory
-    - name: Add kitty.config
-      tags: kitty
+    - name: Add .vimrc
+      tags: vimrc
       become: no
       copy:
-        src: kitty.conf
-        dest: ~/.config/kitty/kitty.conf
+        src: .vimrc
+        dest: ~/.vimrc
+
+    # - name: Ensure kitty config dir exists
+    #   tags: kitty
+    #   become: no
+    #   file:
+    #     path: ~/.config/kitty
+    #     state: directory
+    # - name: Add kitty.config
+    #   tags: kitty
+    #   become: no
+    #   copy:
+    #     src: kitty.conf
+    #     dest: ~/.config/kitty/kitty.conf

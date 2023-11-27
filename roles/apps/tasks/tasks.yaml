@@ -81,6 +81,15 @@
         lmod_version: 8.7.32
         checksum: "sha256:727df3dafb634749947418b334a0828d63753c38f02d4d7a27c6c507e9512d3b"
       block:
+        - name: Check if Downloads folder exists
+          stat:
+            path: ~{{ ansible_user_id }}/Downloads
+          register: file_data
+        - name: Create Downloads folder if doesn't exits
+          file:
+            path: ~{{ ansible_user_id }}/Downloads
+            state: directory
+          when: not file_data.stat.exists
         - name: Download lmod
           get_url:
             url: https://github.com/TACC/Lmod/archive/refs/tags/{{ lmod_version }}.tar.gz
@@ -128,3 +137,5 @@
           - inkscape
           - gimp
         state: latest
+  tags: graphics, never
+        
